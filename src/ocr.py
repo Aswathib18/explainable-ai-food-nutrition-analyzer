@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Global singleton OCR reader instance for reuse across requests
 _OCR_READER = None
+_OCR_INIT_ERROR = None
 
 
 def get_ocr_reader():
@@ -24,14 +25,15 @@ def get_ocr_reader():
     Lazy-initialization of EasyOCR Reader.
     Runs locally on CPU for universal cross-platform compatibility without cloud APIs.
     """
-    global _OCR_READER
-    if _OCR_READER is None:
+    global _OCR_READER, _OCR_INIT_ERROR
+    if _OCR_READER is None and _OCR_INIT_ERROR is None:
         try:
             import easyocr
             logger.info("Initializing EasyOCR reader (CPU mode)...")
             _OCR_READER = easyocr.Reader(["en"], gpu=False, verbose=False)
             logger.info("EasyOCR reader initialized successfully.")
         except Exception as exc:
+            _OCR_INIT_ERROR = str(exc)
             logger.error(f"Failed to initialize EasyOCR: {exc}")
             _OCR_READER = None
     return _OCR_READER
@@ -69,13 +71,14 @@ def run_ocr(
 
         reader = get_ocr_reader()
         if reader is None:
+            init_err = _OCR_INIT_ERROR or "Unknown initialization failure"
             return {
                 "success": False,
                 "raw_text": "",
                 "confidence": 0.0,
                 "detected_regions": [],
                 "line_count": 0,
-                "error_message": "OCR engine could not be initialized in this environment."
+                "error_message": f"OCR engine could not be initialized: {init_err}"
             }
 
         # Run OCR detection & recognition
