@@ -1,0 +1,218 @@
+alias,canonical_food
+apple,Apple
+apples,Apple
+red apple,Apple
+green apple,Apple
+granny smith,Apple
+granny smith apple,Apple
+fuji apple,Apple
+gala apple,Apple
+banana,Banana
+bananas,Banana
+ripe banana,Banana
+orange,Orange
+oranges,Orange
+navel orange,Orange
+strawberry,Strawberry
+strawberries,Strawberry
+fresh strawberries,Strawberry
+blueberry,Blueberry
+blueberries,Blueberry
+grape,Grapes
+grapes,Grapes
+red grapes,Grapes
+green grapes,Grapes
+watermelon,Watermelon
+watermelons,Watermelon
+pineapple,Pineapple
+pineapples,Pineapple
+ananas,Pineapple
+mango,Mango
+mangoes,Mango
+peach,Peach
+peaches,Peach
+pear,Pear
+pears,Pear
+lemon,Lemon
+lemons,Lemon
+avocado,Avocado
+avocados,Avocado
+guacamole,Avocado
+kiwi,Kiwi
+kiwifruit,Kiwi
+broccoli,Broccoli
+steamed broccoli,Broccoli
+carrot,Carrot
+carrots,Carrot
+baby carrot,Carrot
+spinach,Spinach
+palak,Spinach
+spinach leaves,Spinach
+tomato,Tomato
+tomatoes,Tomato
+cherry tomato,Tomato
+cucumber,Cucumber
+cucumbers,Cucumber
+bell pepper,Bell Pepper
+sweet pepper,Bell Pepper
+capsicum,Bell Pepper
+green pepper,Bell Pepper
+red pepper,Bell Pepper
+cauliflower,Cauliflower
+gobi,Cauliflower
+potato,Potato
+potatoes,Potato
+baked potato,Potato
+sweet potato,Sweet Potato
+sweet potatoes,Sweet Potato
+onion,Onion
+onions,Onion
+garlic,Garlic
+garlic clove,Garlic
+mushroom,Mushroom
+mushrooms,Mushroom
+button mushroom,Mushroom
+green beans,Green Beans
+string beans,Green Beans
+french beans,Green Beans
+lettuce,Lettuce
+salad greens,Lettuce
+corn,Corn
+sweetcorn,Corn
+maize,Corn
+white rice,White Rice
+steamed rice,White Rice
+boiled rice,White Rice
+cooked rice,White Rice
+rice,White Rice
+brown rice,Brown Rice
+oats,Oats
+oatmeal,Oats
+porridge,Oats
+whole wheat bread,Whole Wheat Bread
+brown bread,Whole Wheat Bread
+wheat bread,Whole Wheat Bread
+white bread,White Bread
+bread,White Bread
+toast,White Bread
+quinoa,Quinoa
+cooked quinoa,Quinoa
+pasta,Pasta
+spaghetti,Pasta
+macaroni,Pasta
+penne,Pasta
+noodles,Pasta
+bagel,Bagel
+bagels,Bagel
+pretzel,Pretzel
+pretzels,Pretzel
+cornflakes,Cornflakes
+cereal,Cornflakes
+chicken breast,Chicken Breast
+chicken,Chicken Breast
+grilled chicken,Chicken Breast
+roasted chicken,Chicken Breast
+beef steak,Beef Steak
+beef,Beef Steak
+steak,Beef Steak
+salmon,Salmon
+grilled salmon,Salmon
+salmon fillet,Salmon
+egg,Egg
+eggs,Egg
+boiled egg,Egg
+fried egg,Egg
+poached egg,Egg
+tuna,Tuna
+canned tuna,Tuna
+tuna fish,Tuna
+turkey,Turkey
+turkey breast,Turkey
+pork chop,Pork Chop
+pork,Pork Chop
+shrimp,Shrimp
+prawns,Shrimp
+prawn,Shrimp
+tofu,Tofu
+soy curd,Tofu
+lentils,Lentils
+dal,Lentils
+daal,Lentils
+chickpeas,Chickpeas
+chana,Chickpeas
+garbanzo beans,Chickpeas
+black beans,Black Beans
+almonds,Almonds
+badam,Almonds
+walnuts,Walnuts
+peanuts,Peanuts
+groundnuts,Peanuts
+peanut butter,Peanut Butter
+chia seeds,Chia Seeds
+milk,Milk
+cow milk,Milk
+whole milk,Milk
+greek yogurt,Greek Yogurt
+curd,Greek Yogurt
+yogurt,Greek Yogurt
+cheddar cheese,Cheddar Cheese
+cheese,Cheddar Cheese
+butter,Butter
+almond milk,Almond Milk
+soy milk,Soy Milk
+pizza,Pizza
+slice of pizza,Pizza
+cheese pizza,Pizza
+pepperoni pizza,Pizza
+burger,Burger
+cheeseburger,Burger
+hamburger,Burger
+veggie burger,Burger
+french fries,French Fries
+fries,French Fries
+chips,French Fries
+hot dog,Hot Dog
+hotdog,Hot Dog
+croissant,Croissant
+croissants,Croissant
+chocolate bar,Chocolate Bar
+chocolate,Chocolate Bar
+dark chocolate,Chocolate Bar
+ice cream,Ice Cream
+vanilla ice cream,Ice Cream
+potato chips,Potato Chips
+crisps,Potato Chips
+donut,Donut
+doughnut,Donut
+burrito,Burrito
+burritos,Burrito
+sushi,Sushi
+sushi roll,Sushi
+green salad,Green Salad
+salad,Green Salad
+curry,Curry
+chicken curry,Curry
+samosa,Samosa
+samosas,Samosa
+hummus,Hummus
+chicken noodle soup,Chicken Noodle Soup
+soup,Chicken Noodle Soup
+sandwich,Sandwich
+club sandwich,Sandwich
+fried rice,Fried Rice
+egg fried rice,Fried Rice
+espresso,Espresso
+coffee,Espresso
+black coffee,Espresso
+orange juice,Orange Juice
+oj,Orange Juice
+green tea,Green Tea
+tea,Green Tea
+apple juice,Apple Juice
+soda,Soda
+coca cola,Soda
+coke,Soda
+pepsi,Soda
+soft drink,Soda
+protein shake,Protein Shake
+whey protein,Protein Shake
