@@ -206,12 +206,6 @@ all_foods = nutrition_db.get_all_food_names()
 # SIDEBAR NAVIGATION & SETTINGS
 # ==============================================================================
 with st.sidebar:
-    st.markdown("### 🎓 Academic Project Info")
-    st.info(
-        "**Title**: Explainable AI-Based Real-Time Food and Nutrition Analysis System\n\n"
-        "**Domain**: Computer Vision, OCR, Explainable AI, Nutrition Informatics"
-    )
-
     st.markdown("---")
     st.markdown("### 🧭 Main Navigation Modes")
 
@@ -273,8 +267,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Navigation tabs for comprehensive demonstration
-main_tabs = st.tabs(["📊 Interactive Analysis", "🧠 ML Model & SHAP Lab", "📜 Analysis History", "ℹ️ System Architecture & Viva"])
+# Navigation tabs
+main_tabs = st.tabs(["📊 Interactive Analysis", "📜 Analysis History"])
 
 
 # ==============================================================================
@@ -359,8 +353,7 @@ def display_allergen_section(allergen_res: Dict[str, Any]):
     else:
         st.success("✅ No supported allergen terms detected in the scanned ingredient text.")
 
-    # Mandatory safety disclaimer
-    st.info(f"ℹ️ **Safety Note**: {ALLERGEN_SAFETY_DISCLAIMER}")
+
 
 
 # ==============================================================================
@@ -1116,77 +1109,13 @@ with main_tabs[0]:
             )
 
 
-# ==============================================================================
-# TAB 2: ML MODEL & SHAP LAB
-# ==============================================================================
-with main_tabs[1]:
-    st.subheader("🧠 Machine Learning Model & SHAP Explainer Lab")
-    st.markdown(
-        """
-        This section demonstrates the **Supervised Machine Learning** component of our project.
-        A **Random Forest Classifier** is trained on nutritional feature vectors to classify
-        foods into 3 health tiers. **SHAP (SHapley Additive exPlanations)** is then applied to compute
-        local and global game-theoretic Shapley values.
-        """
-    )
 
-    ml_col1, ml_col2 = st.columns([1, 1.2])
-
-    with ml_col1:
-        st.markdown("#### Model Performance Metrics")
-        if xai_model.is_trained:
-            m = xai_model.metrics
-            pm1, pm2 = st.columns(2)
-            pm1.metric("Overall Accuracy", f"{m.get('accuracy', 0)}%")
-            pm2.metric("Weighted F1-Score", f"{m.get('f1_score', 0)}%")
-
-            pm3, pm4 = st.columns(2)
-            pm3.metric("Weighted Precision", f"{m.get('precision', 0)}%")
-            pm4.metric("Weighted Recall", f"{m.get('recall', 0)}%")
-
-            st.caption(f"Evaluated on {m.get('test_samples', 0)} test samples (80/20 train/test split).")
-
-            if st.button("🔄 Retrain Random Forest Model"):
-                with st.spinner("Retraining Random Forest Classifier..."):
-                    new_metrics = xai_model.train_model()
-                    st.success("Model successfully retrained and saved!")
-                    st.rerun()
-
-            if "confusion_matrix" in m and "classes" in m:
-                st.plotly_chart(
-                    create_confusion_matrix_chart(m["confusion_matrix"], m["classes"]),
-                    use_container_width=True
-                )
-        else:
-            st.error("ML Model is not currently trained.")
-
-    with ml_col2:
-        st.markdown("#### Interactive SHAP Local Feature Explanation")
-        st.write("Select a food item to compute real-time SHAP values on its nutrient vector:")
-        shap_food_pick = st.selectbox("Select food for SHAP analysis:", options=all_foods, key="shap_food_pick_box")
-
-        if shap_food_pick:
-            shap_nut_info = nutrition_db.get_nutrition_info(shap_food_pick)
-            if shap_nut_info:
-                shap_result = xai_model.explain_with_shap(shap_nut_info)
-                if shap_result:
-                    st.markdown(
-                        f"**Model Prediction**: `{shap_result['predicted_class']}` "
-                        f"*(Confidence: {shap_result['confidence']}%)*"
-                    )
-                    st.plotly_chart(create_shap_waterfall_chart(shap_result), use_container_width=True)
-
-                    st.markdown("##### SHAP Feature Contribution Table")
-                    df_shap = pd.DataFrame(shap_result["shap_contributions"])
-                    st.dataframe(df_shap, use_container_width=True)
-                else:
-                    st.warning("SHAP explanation could not be computed for this item.")
 
 
 # ==============================================================================
 # TAB 3: ANALYSIS HISTORY & CSV EXPORT
 # ==============================================================================
-with main_tabs[2]:
+with main_tabs[1]:
     st.subheader("📜 Recent Analysis History (SQLite)")
     st.markdown("Log of recent nutritional assessments and packaged food scans saved locally in `data/analysis_history.db`:")
 
@@ -1219,67 +1148,3 @@ with main_tabs[2]:
                 clear_analysis_history()
                 st.success("History database cleared.")
                 st.rerun()
-
-
-# ==============================================================================
-# TAB 4: ARCHITECTURE & VIVA PREPARATION
-# ==============================================================================
-with main_tabs[3]:
-    st.subheader("ℹ️ System Architecture & BSc Project Viva Reference")
-
-    st.markdown(
-        """
-        ### 🎯 Comprehensive Project Overview
-        - **Problem**: Consumers and students struggle to understand packaged food nutritional labels, calculate health trade-offs, and spot allergen risks.
-        - **Proposed Multi-Modal Solution**: An end-to-end Explainable AI system that unites:
-          1. **Computer Vision**: Real-time camera capture and MobileNetV2 image recognition.
-          2. **Image Preprocessing**: CLAHE contrast enhancement, sharpening, noise reduction, and adaptive thresholding to optimize OCR read rates.
-          3. **Real OCR**: Local, deep learning Optical Character Recognition (EasyOCR CRAFT + CRNN) running on CPU.
-          4. **Controlled Normalization**: Typo correction for character confusion without arbitrary substitution.
-          5. **Nutrition & Allergen Parsing**: Structured regex extraction with parenthetical ingredient parsing and precautionary statement isolation.
-          6. **Explainable AI (XAI)**:
-             - *Deterministic Mathematical Points Attribution*: Auditable factor explanations for individual packaged products.
-             - *Statistical Game-Theoretic SHAP*: TreeExplainer on Random Forest Classifier for global and local feature attribution.
-          7. **User Verification**: Mandatory verification loop so users inspect and correct OCR output before final scoring.
-
-        ---
-
-        ### ⚙️ Multi-Modal System Pipeline Flow
-        1. **Camera Capture**: `st.camera_input()` captures current packaging frame locally in-memory.
-        2. **Preprocessing**: Grayscale conversion, CLAHE contrast enhancement, sharpening, and image quality assessment (resolution, blur via Laplacian variance, brightness, contrast).
-        3. **OCR Text Extraction**: Local EasyOCR neural network extracts bounding boxes, text lines, and per-line confidence scores.
-        4. **Structured Parsing**:
-           - Nutrition facts extraction with unit validation and per-100g conversion.
-           - Ingredient list splitting preserving nested parentheses.
-           - Controlled allergen dictionary matching with exact detected terms and cross-contact statement separation.
-        5. **User Verification**: Editable fields allow the user to review and correct any OCR artifacts.
-        6. **Scoring & Explainable AI**: Reference Nutrition Score (0–100) calculated with positive boosters (protein, fiber) and penalties (added sugar, saturated fat, trans fat, sodium, calorie density).
-        7. **Storage**: SQLite history logging with CSV export.
-
-        ---
-
-        ### 🎓 Viva Voce Key Questions & Answers
-        - **Q1: Why is EasyOCR preferred over cloud OCR APIs like Google Vision?**
-          *Answer*: EasyOCR runs 100% locally on CPU without sending consumer images over the internet. This preserves user privacy, eliminates recurring API costs, and allows the system to operate offline.
-        - **Q2: Why must allergen detection separate ingredients from precautionary statements?**
-          *Answer*: A product containing "Soy lecithin" has soy as an active recipe ingredient, whereas "May contain traces of peanuts" indicates potential equipment cross-contact. Conflating the two misleads users about actual recipe formulation.
-        - **Q3: Why provide both rule-based scoring and SHAP explainability?**
-          *Answer*: Transparent rule-based point attribution provides 100% deterministic auditability for consumer nutrition labels (e.g. exactly -6 points for 4g saturated fat), while SHAP explains the probabilistic machine learning classifier's feature importance across the entire food dataset.
-        - **Q4: How are OCR typos safely corrected?**
-          *Answer*: We apply controlled regular expressions specifically targeting common digit/letter confusions in nutritional terms (e.g., `Cal0ries -> Calories`, `Pr0tein -> Protein`, `5odium -> Sodium`) without replacing arbitrary words.
-        """
-    )
-
-
-# ==============================================================================
-# FOOTER & SAFETY DISCLAIMER (Requirement 30)
-# ==============================================================================
-st.markdown("---")
-st.markdown(
-    """
-    <div style="text-align: center; color: #757575; font-size: 12px; padding: 10px 0;">
-        <b>Safety & Educational Project Disclaimer:</b> This application is an educational Data Science project. Nutrition values are extracted from product labels and may contain OCR or labeling errors. Allergen detection is based on the text successfully read from the package and is not a guarantee that a product is safe for a person with an allergy. Always verify the original packaging and manufacturer allergen information. This system does not provide medical advice.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
