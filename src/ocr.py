@@ -26,12 +26,13 @@ def get_ocr_reader():
     Runs locally on CPU for universal cross-platform compatibility without cloud APIs.
     """
     global _OCR_READER, _OCR_INIT_ERROR
-    if _OCR_READER is None and _OCR_INIT_ERROR is None:
+    if _OCR_READER is None:
         try:
             import easyocr
             logger.info("Initializing EasyOCR reader (CPU mode)...")
             _OCR_READER = easyocr.Reader(["en"], gpu=False, verbose=False)
             logger.info("EasyOCR reader initialized successfully.")
+            _OCR_INIT_ERROR = None
         except Exception as exc:
             _OCR_INIT_ERROR = str(exc)
             logger.error(f"Failed to initialize EasyOCR: {exc}")
