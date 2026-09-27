@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Union, Tuple, Optional, Dict, Any
 import numpy as np
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
-import cv2
+try:
+    import cv2
+    _CV2_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    cv2 = None  # type: ignore[assignment]
+    _CV2_AVAILABLE = False
 
 import config
 
