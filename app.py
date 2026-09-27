@@ -683,9 +683,12 @@ with main_tabs[0]:
                 with st.spinner("🔍 Running Local EasyOCR Detection & Recognition..."):
                     # Run on contrast enhanced processed image for maximum text accuracy
                     ocr_res = run_ocr(preprocessed_dict["contrast_enhanced"])
+                    # Fallback: if preprocessed image fails, try original resized image
+                    if not ocr_res["success"]:
+                        ocr_res = run_ocr(preprocessed_dict["resized"])
 
                 if not ocr_res["success"]:
-                    st.error("⚠️ Unable to reliably read the label. Please capture the image again with better lighting.")
+                    st.error(f"⚠️ Unable to reliably read the label: {ocr_res.get('error_message', 'Unknown error')}")
                     st.caption("You can also manually enter the values using the Manual Nutrition Entry mode.")
                 else:
                     raw_ocr_text = ocr_res["raw_text"]
@@ -942,9 +945,12 @@ with main_tabs[0]:
                 with st.spinner("Processing image and running OCR..."):
                     pre_ocr = preprocess_for_ocr(captured_ing_img)
                     ocr_res = run_ocr(pre_ocr["contrast_enhanced"])
+                    # Fallback: if preprocessed image fails, try original resized image
+                    if not ocr_res["success"]:
+                        ocr_res = run_ocr(pre_ocr["resized"])
 
                 if not ocr_res["success"]:
-                    st.error("⚠️ Unable to reliably read the ingredient list. Please try again with better focus and lighting.")
+                    st.error(f"⚠️ Unable to reliably read the ingredient list: {ocr_res.get('error_message', 'Unknown error')}")
                 else:
                     st.success(f"✅ OCR Extracted {ocr_res['line_count']} text lines ({ocr_res['confidence']*100:.1f}% confidence)")
                     st.session_state["ing_ocr_raw_text"] = ocr_res["raw_text"]

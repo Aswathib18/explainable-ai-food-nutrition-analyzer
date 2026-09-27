@@ -58,8 +58,9 @@ def run_ocr(
     try:
         # Normalize input to numpy array
         if isinstance(image_input, Image.Image):
-            pil_img = load_image(image_input)
-            img_np = np.array(pil_img)
+            # Don't force through load_image (which converts to RGB)
+            # EasyOCR can handle both grayscale and RGB numpy arrays
+            img_np = np.array(image_input)
         elif isinstance(image_input, np.ndarray):
             img_np = image_input
         else:
