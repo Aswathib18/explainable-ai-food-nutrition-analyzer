@@ -1,4 +1,4 @@
-﻿"""
+"""
 Image preprocessing and computer vision transformation utilities.
 Handles image loading, color-space conversion, resizing, and normalization
 for deep learning inference and optical character recognition (OCR) pipelines.
@@ -299,7 +299,7 @@ def deskew_image(gray_np: np.ndarray) -> np.ndarray:
 
 def preprocess_for_ocr(
     image: Image.Image,
-    target_width: int = 1400
+    target_width: int = 900
 ) -> Dict[str, Any]:
     """
     Comprehensive Image Preprocessing for Food Label OCR.
@@ -313,8 +313,16 @@ def preprocess_for_ocr(
     """
     img_rgb = load_image(image)
 
+    # Constrain image size to max 1000px in either dimension to prevent
+    # excessive memory allocation in PyTorch CRAFT on 1GB cloud instances
     w, h = img_rgb.size
-    if w != target_width and target_width > 0:
+    max_dim = 1000
+    if max(w, h) > max_dim:
+        scale = max_dim / float(max(w, h))
+        new_w = max(1, int(w * scale))
+        new_h = max(1, int(h * scale))
+        img_resized = img_rgb.resize((new_w, new_h), Image.Resampling.LANCZOS)
+    elif w != target_width and target_width > 0:
         aspect = h / max(w, 1)
         new_w = target_width
         new_h = int(target_width * aspect)

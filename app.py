@@ -10,11 +10,17 @@ Supported Modes:
 """
 
 import sys
+import warnings
 from pathlib import Path
 import streamlit as st
 from PIL import Image
 import pandas as pd
 import numpy as np
+
+# Suppress repetitive deprecation warnings (e.g. use_container_width) in cloud logs
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Add project root to system path for reliable imports
 ROOT_DIR = Path(__file__).resolve().parent

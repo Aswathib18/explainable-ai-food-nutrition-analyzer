@@ -28,6 +28,13 @@ def get_ocr_reader():
     global _OCR_READER, _OCR_INIT_ERROR
     if _OCR_READER is None:
         try:
+            import torch
+            try:
+                # Limit PyTorch to 1 CPU thread to prevent thread memory pool expansion
+                torch.set_num_threads(1)
+            except Exception:
+                pass
+
             import easyocr
             logger.info("Initializing EasyOCR reader (CPU mode)...")
             _OCR_READER = easyocr.Reader(["en"], gpu=False, verbose=False)
@@ -61,13 +68,37 @@ def run_ocr(
     try:
         # Normalize input to numpy array
         if isinstance(image_input, Image.Image):
-            # Don't force through load_image (which converts to RGB)
-            # EasyOCR can handle both grayscale and RGB numpy arrays
+            # Constrain dimensions to max 1000px if passed directly
+            w, h = image_input.size
+            if max(w, h) > 1000:
+                scale = 1000.0 / max(w, h)
+                image_input = image_input.resize(
+                    (max(1, int(w * scale)), max(1, int(h * scale))),
+                    Image.Resampling.LANCZOS
+                )
             img_np = np.array(image_input)
         elif isinstance(image_input, np.ndarray):
-            img_np = image_input
+            h, w = img_np_shape = image_input.shape[:2]
+            if max(h, w) > 1000:
+                from PIL import Image as _PILImg
+                pil_temp = _PILImg.fromarray(image_input)
+                scale = 1000.0 / max(h, w)
+                pil_temp = pil_temp.resize(
+                    (max(1, int(w * scale)), max(1, int(h * scale))),
+                    Image.Resampling.LANCZOS
+                )
+                img_np = np.array(pil_temp)
+            else:
+                img_np = image_input
         else:
             pil_img = load_image(image_input)
+            w, h = pil_img.size
+            if max(w, h) > 1000:
+                scale = 1000.0 / max(w, h)
+                pil_img = pil_img.resize(
+                    (max(1, int(w * scale)), max(1, int(h * scale))),
+                    Image.Resampling.LANCZOS
+                )
             img_np = np.array(pil_img)
 
         reader = get_ocr_reader()
@@ -82,9 +113,27 @@ def run_ocr(
                 "error_message": f"OCR engine could not be initialized: {init_err}"
             }
 
-        # Run OCR detection & recognition
-        # detail=1 returns list of (bbox, text, confidence)
-        results = reader.readtext(img_np, detail=1, paragraph=False)
+        # Run OCR detection & recognition with strict memory bounds
+        import gc
+        import torch
+
+        try:
+            torch.set_num_threads(1)
+        except Exception:
+            pass
+
+        with torch.inference_mode():
+            results = reader.readtext(
+                img_np,
+                detail=1,
+                paragraph=False,
+                mag_ratio=1.0,     # Prevent 1.5x upscaling (saves ~60% RAM)
+                canvas_size=1024,  # Cap canvas size to 1024 (prevents OOM on high-res)
+                batch_size=1,      # Process 1 crop at a time to minimize peak RAM
+                workers=0          # Run synchronously in main thread
+            )
+
+        gc.collect()
 
         if not results:
             return {
