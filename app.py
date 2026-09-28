@@ -180,25 +180,53 @@ st.markdown(
         border-color: #81C784;
     }
 
-    /* Allergen alert box */
+    /* Allergen alert box — explicit dark text so it's readable on any background */
     .allergen-box {
         border-left: 5px solid #D32F2F;
         background-color: #FFEBEE;
+        color: #212121 !important;
         padding: 12px 16px;
         border-radius: 4px;
         margin: 10px 0;
     }
+    .allergen-box b, .allergen-box code, .allergen-box * {
+        color: #212121 !important;
+    }
     .precautionary-box {
         border-left: 5px solid #FFA000;
         background-color: #FFF8E1;
+        color: #212121 !important;
         padding: 12px 16px;
         border-radius: 4px;
         margin: 10px 0;
+    }
+    .precautionary-box b, .precautionary-box code, .precautionary-box * {
+        color: #212121 !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
+# ==============================================================================
+# SAFE FLOAT HELPER
+# ==============================================================================
+def _safe_float(value, default: float = 0.0) -> float:
+    """Safely convert OCR-parsed values (str, int, float, or None) to float."""
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        import re
+        match = re.search(r"[-+]?\d*\.?\d+", str(value))
+        if match:
+            try:
+                return float(match.group(0))
+            except ValueError:
+                pass
+    return default
+
 
 # ==============================================================================
 # INITIALIZE SERVICES
@@ -218,10 +246,10 @@ with st.sidebar:
     selected_mode = st.radio(
         "Select Application Mode:",
         [
-            "🍎 Food Image Analysis",
-            "📦 Real-Time Food Label Scanner",
-            "🧾 Ingredient Scanner",
-            "✍ Manual Nutrition Entry"
+            "Food Image Analysis",
+            "Real-Time Food Label Scanner",
+            "Ingredient Scanner",
+            "Manual Nutrition Entry"
         ],
         index=0
     )
@@ -229,10 +257,10 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### ⚙️ Mode Settings")
 
-    if selected_mode == "🍎 Food Image Analysis":
+    if selected_mode == "Food Image Analysis":
         food_input_mode = st.radio(
             "Food Source:",
-            ["📸 Upload Food Photo", "🔍 Manual Food Search"],
+            ["Upload Food Photo", "Manual Food Search"],
             index=0
         )
         confidence_threshold = st.slider(
@@ -250,10 +278,10 @@ with st.sidebar:
         else:
             st.success("✅ MobileNetV2 ONNX Active (Local CPU Inference)")
 
-    elif selected_mode in ["📦 Real-Time Food Label Scanner", "🧾 Ingredient Scanner"]:
-        st.caption("📷 Camera Capture Mode: Uses Streamlit Real-Time Camera input.")
-        st.caption("🔒 Privacy: Images processed in-memory and not stored by default.")
-        st.success("✅ Local EasyOCR Deep Learning Engine Active")
+    elif selected_mode in ["Real-Time Food Label Scanner", "Ingredient Scanner"]:
+        st.caption("Camera Capture Mode: Uses Streamlit Real-Time Camera input.")
+        st.caption("Privacy: Images processed in-memory and not stored by default.")
+        st.success("Local EasyOCR Deep Learning Engine Active")
 
     st.markdown("---")
     if st.button("🔄 Reset Application Session", use_container_width=True):
@@ -382,7 +410,7 @@ with main_tabs[0]:
         with col_input:
             st.subheader("1. Input Food Source")
 
-            if food_input_mode == "📸 Upload Food Photo":
+            if food_input_mode == "Upload Food Photo":
                 uploaded_file = st.file_uploader(
                     "Upload a clear food photo (JPG, JPEG, PNG, WEBP):",
                     type=["jpg", "jpeg", "png", "webp"],
@@ -393,13 +421,13 @@ with main_tabs[0]:
                 st.caption("Or test with pre-packaged sample foods:")
                 c1, c2, c3, c4 = st.columns(4)
                 sample_choice = None
-                if c1.button("🍎 Apple"):
+                if c1.button("Apple"):
                     sample_choice = "Apple"
-                if c2.button("🍕 Pizza"):
+                if c2.button("Pizza"):
                     sample_choice = "Pizza"
-                if c3.button("🥦 Broccoli"):
+                if c3.button("Broccoli"):
                     sample_choice = "Broccoli"
-                if c4.button("🍔 Burger"):
+                if c4.button("Burger"):
                     sample_choice = "Burger"
 
                 if sample_choice:
@@ -411,7 +439,7 @@ with main_tabs[0]:
                 if uploaded_file is not None:
                     is_valid, err_msg = validate_uploaded_image(uploaded_file)
                     if not is_valid:
-                        st.error(f"❌ {err_msg}")
+                        st.error(f"Error: {err_msg}")
                     else:
                         try:
                             pil_img = load_image(uploaded_file)
@@ -419,22 +447,22 @@ with main_tabs[0]:
                             st.image(pil_img, caption="Uploaded Food Image", use_container_width=True)
 
                             img_metrics = compute_image_metrics(pil_img)
-                            with st.expander("🖼️ Computer Vision Image Diagnostics", expanded=False):
+                            with st.expander("Computer Vision Image Diagnostics", expanded=False):
                                 m_c1, m_c2, m_c3 = st.columns(3)
                                 m_c1.metric("Resolution", f"{img_metrics['width']}x{img_metrics['height']}")
                                 m_c2.metric("Brightness", f"{img_metrics['mean_brightness']}")
                                 m_c3.metric("Sharpness", f"{img_metrics['sharpness_score']}")
 
-                            with st.spinner("🤖 Running MobileNetV2 Deep Learning Inference..."):
+                            with st.spinner("Running MobileNetV2 Deep Learning Inference..."):
                                 cv_prediction_meta = classifier.classify_image(pil_img)
 
                             detected_food = cv_prediction_meta["food_name"]
                             conf = cv_prediction_meta["confidence"]
 
                             if cv_prediction_meta.get("is_fallback_mode"):
-                                st.warning(f"⚠️ {cv_prediction_meta.get('mode_description')}")
+                                st.warning(cv_prediction_meta.get('mode_description'))
 
-                            st.markdown("#### 🎯 AI Recognition Output")
+                            st.markdown("#### AI Recognition Output")
                             st.info(f"**Predicted Food**: **{detected_food}**\n\n**Confidence**: **{conf:.1f}%**")
 
                             if cv_prediction_meta.get("top_predictions"):
@@ -445,7 +473,7 @@ with main_tabs[0]:
 
                             if conf < confidence_threshold or detected_food == "Unknown Food":
                                 st.warning(
-                                    f"⚠️ Prediction confidence ({conf:.1f}%) is below your threshold ({confidence_threshold}%). "
+                                    f"Prediction confidence ({conf:.1f}%) is below your threshold ({confidence_threshold}%). "
                                     "You can confirm or manually pick the correct food below."
                                 )
                                 manual_override = st.selectbox(
@@ -471,7 +499,7 @@ with main_tabs[0]:
                             st.error(f"Image processing error: {exc}")
 
             else:
-                st.markdown("#### 🔍 Direct Food Selection")
+                st.markdown("#### Direct Food Selection")
                 manual_pick = st.selectbox(
                     "Choose food item from database:",
                     options=all_foods,
@@ -487,14 +515,14 @@ with main_tabs[0]:
             st.subheader("2. Nutritional Profiling & Explainable AI")
 
             if not active_food or active_food == "Unknown Food":
-                st.info("👈 Upload an image or select a food item on the left to begin analysis.")
+                st.info("Upload an image or select a food item on the left to begin analysis.")
             else:
                 nutrition_info = nutrition_db.get_nutrition_info(active_food)
                 if not nutrition_info:
-                    st.error(f"⚠️ Nutrition information for '**{active_food}**' is not available in current dataset.")
+                    st.error(f"Nutrition information for '{active_food}' is not available in the current dataset.")
                 else:
                     st.markdown(
-                        f"### 🍽️ {nutrition_info['food']} "
+                        f"### {nutrition_info['food']} "
                         f"<span style='font-size:14px; color:#616161;'>({active_source} • {nutrition_info['serving_size']} {nutrition_info['serving_unit']} serving)</span>",
                         unsafe_allow_html=True
                     )
@@ -533,7 +561,7 @@ with main_tabs[0]:
                         analysis_mode="Food Image Analysis"
                     )
 
-                    st.markdown("### 🔍 Explainable AI: Why did this food receive this score?")
+                    st.markdown("### Explainable AI: Why did this food receive this score?")
                     xai_col1, xai_col2 = st.columns(2)
                     pos_factors = [f for f in score_dict["factors"] if f["status"] == "positive"]
                     neg_factors = [f for f in score_dict["factors"] if f["status"] == "negative"]
@@ -556,7 +584,7 @@ with main_tabs[0]:
 
                     st.plotly_chart(create_feature_contribution_chart(score_dict), use_container_width=True)
 
-                    st.markdown("### 📈 Nutrient Visualizations")
+                    st.markdown("### Nutrient Visualizations")
                     ch_col1, ch_col2 = st.columns(2)
                     with ch_col1:
                         st.plotly_chart(create_macro_donut_chart(nutrition_info), use_container_width=True)
@@ -570,7 +598,7 @@ with main_tabs[0]:
                             use_container_width=True
                         )
 
-                    st.markdown("### 💡 Data-Driven Educational Recommendations")
+                    st.markdown("### Data-Driven Educational Recommendations")
                     recs = generate_dietary_recommendations(nutrition_info, score_dict)
                     for r in recs:
                         st.info(r)
@@ -578,11 +606,11 @@ with main_tabs[0]:
     # --------------------------------------------------------------------------
     # MODE 2: 📦 REAL-TIME FOOD LABEL SCANNER
     # --------------------------------------------------------------------------
-    elif selected_mode == "📦 Real-Time Food Label Scanner":
+    elif selected_mode == "Real-Time Food Label Scanner":
         st.markdown(
             """
-            <div style="background:#E3F2FD; border:1px solid #90CAF9; border-radius:8px; padding:12px; margin-bottom:14px;">
-                <b>📦 Real-Time Food Label Scanner</b><br>
+            <div style="background:#E3F2FD; border:1px solid #90CAF9; border-radius:8px; padding:12px; margin-bottom:14px; color:#1a1a1a;">
+                <b>Real-Time Food Label Scanner</b><br>
                 Point your camera at a packaged food nutrition label to extract real nutritional metrics via OCR,
                 calculate a transparent Reference Nutrition Score, explain contributions, and detect allergen ingredients.
             </div>
@@ -592,19 +620,19 @@ with main_tabs[0]:
 
         st.markdown(
             """
-            <span class="pipeline-step">📷 Camera Capture</span> →
-            <span class="pipeline-step">🖼 Image Preprocessing</span> →
-            <span class="pipeline-step">🔍 OCR</span> →
-            <span class="pipeline-step">🧾 Text Extraction</span> →
-            <span class="pipeline-step">🥗 Nutrition Parsing</span> →
-            <span class="pipeline-step">⚠️ Allergen Detection</span> →
-            <span class="pipeline-step">📊 Nutrition Analysis</span> →
-            <span class="pipeline-step">🧠 Explainable AI</span>
+            <span class="pipeline-step">Camera Capture</span> &rarr;
+            <span class="pipeline-step">Image Preprocessing</span> &rarr;
+            <span class="pipeline-step">OCR</span> &rarr;
+            <span class="pipeline-step">Text Extraction</span> &rarr;
+            <span class="pipeline-step">Nutrition Parsing</span> &rarr;
+            <span class="pipeline-step">Allergen Detection</span> &rarr;
+            <span class="pipeline-step">Nutrition Analysis</span> &rarr;
+            <span class="pipeline-step">Explainable AI</span>
             """,
             unsafe_allow_html=True
         )
 
-        st.caption("🔒 *Camera Privacy Note: Captured images are processed locally in-memory and are not stored by default.*")
+        st.caption("Camera Privacy Note: Captured images are processed locally in-memory and are not stored by default.")
 
         scan_col_left, scan_col_right = st.columns([1, 1.3], gap="large")
 
@@ -612,9 +640,9 @@ with main_tabs[0]:
         label_source_type = "Real-Time Camera Capture"
 
         with scan_col_left:
-            st.subheader("📷 Scan Food Label")
+            st.subheader("Scan Food Label")
 
-            input_tab1, input_tab2, input_tab3 = st.tabs(["📷 Real-Time Camera", "📁 Upload Image", "🧪 Test Sample Label"])
+            input_tab1, input_tab2, input_tab3 = st.tabs(["Real-Time Camera", "Upload Image", "Test Sample Label"])
 
             with input_tab1:
                 st.write("Position the nutrition label clearly inside the camera.")
@@ -635,7 +663,7 @@ with main_tabs[0]:
 
             with input_tab3:
                 st.write("Quickly test with our verified packaged food sample:")
-                if st.button("🧪 Load Sample: Oat & Honey Biscuit Label", use_container_width=True):
+                if st.button("Load Sample: Oat and Honey Biscuit Label", use_container_width=True):
                     sample_path = Path("assets/sample_biscuit_label.jpg")
                     if sample_path.exists():
                         captured_label_img = Image.open(sample_path)
@@ -649,7 +677,7 @@ with main_tabs[0]:
             # Image Preprocessing & Diagnostics display
             if captured_label_img is not None:
                 st.markdown("---")
-                st.markdown("#### 🖼️ Image Preprocessing & Diagnostics")
+                st.markdown("#### Image Preprocessing and Diagnostics")
 
                 with st.spinner("Processing image for OCR..."):
                     preprocessed_dict = preprocess_for_ocr(captured_label_img)
@@ -659,9 +687,9 @@ with main_tabs[0]:
 
                 # Quality indicator badge
                 if diag["is_acceptable"]:
-                    st.success(f"✅ Quality: **{diag['quality_status']}** (Sharpness: {metrics['sharpness_score']}, Brightness: {metrics['mean_brightness']})")
+                    st.success(f"Quality: {diag['quality_status']} (Sharpness: {metrics['sharpness_score']}, Brightness: {metrics['mean_brightness']})")
                 else:
-                    st.warning(f"⚠️ Quality: **{diag['quality_status']}** — {diag['quality_desc']}")
+                    st.warning(f"Quality: {diag['quality_status']} — {diag['quality_desc']}")
                     for sugg in diag["suggestions"]:
                         st.write(f"- {sugg}")
 
@@ -672,7 +700,7 @@ with main_tabs[0]:
                 with img_c2:
                     st.image(preprocessed_dict["processed_primary"], caption="Processed for OCR (CLAHE)", use_container_width=True)
 
-                with st.expander("🔬 View Computer Vision Preprocessing Stages", expanded=False):
+                with st.expander("View Computer Vision Preprocessing Stages", expanded=False):
                     stage_tabs = st.tabs(["Grayscale", "CLAHE Contrast", "Sharpened", "Otsu Threshold", "Adaptive Gaussian"])
                     with stage_tabs[0]:
                         st.image(preprocessed_dict["grayscale"], use_container_width=True)
@@ -686,7 +714,7 @@ with main_tabs[0]:
                         st.image(preprocessed_dict["adaptive_thresh"], use_container_width=True)
 
                 # Execute OCR
-                with st.spinner("🔍 Running Local EasyOCR Detection & Recognition..."):
+                with st.spinner("Running Local EasyOCR Detection and Recognition..."):
                     # Run on contrast enhanced processed image for maximum text accuracy
                     ocr_res = run_ocr(preprocessed_dict["contrast_enhanced"])
                     # Fallback: if preprocessed image fails, try original resized image
@@ -694,14 +722,14 @@ with main_tabs[0]:
                         ocr_res = run_ocr(preprocessed_dict["resized"])
 
                 if not ocr_res["success"]:
-                    st.error(f"⚠️ Unable to reliably read the label: {ocr_res.get('error_message', 'Unknown error')}")
+                    st.error(f"Unable to reliably read the label: {ocr_res.get('error_message', 'Unknown error')}")
                     st.caption("You can also manually enter the values using the Manual Nutrition Entry mode.")
                 else:
                     raw_ocr_text = ocr_res["raw_text"]
                     ocr_conf = ocr_res["confidence"]
 
-                    st.markdown(f"**OCR Status**: ✅ Detected {ocr_res['line_count']} text regions *(Confidence: {ocr_conf * 100:.1f}%)*")
-                    with st.expander("📄 View Raw Extracted OCR Text", expanded=False):
+                    st.markdown(f"**OCR Status**: Detected {ocr_res['line_count']} text regions (Confidence: {ocr_conf * 100:.1f}%)")
+                    with st.expander("View Raw Extracted OCR Text", expanded=False):
                         st.text_area("Raw Text:", value=raw_ocr_text, height=180, disabled=True)
 
                     # Initial parsing
@@ -715,14 +743,14 @@ with main_tabs[0]:
                     st.session_state["label_source_type"] = label_source_type
 
         with scan_col_right:
-            st.subheader("2. OCR Extraction & User Verification")
+            st.subheader("2. OCR Extraction and User Verification")
 
             if "ocr_parsed_data" not in st.session_state:
-                st.info("👈 Capture a food label using the camera or upload an image on the left to begin OCR scanning.")
+                st.info("Capture a food label using the camera or upload an image on the left to begin OCR scanning.")
             else:
                 p_data = st.session_state["ocr_parsed_data"]
 
-                st.markdown("### 🔍 Verify Extracted Nutrition Information")
+                st.markdown("### Verify Extracted Nutrition Information")
                 st.write("*These values were extracted from the package label using OCR. Please verify them before analysis.*")
 
                 with st.form("verify_nutrition_form"):
@@ -730,18 +758,18 @@ with main_tabs[0]:
                     with f_c1:
                         v_product = st.text_input("Product Name:", value=p_data.get("product_name") or "Packaged Food Product")
                         v_serving = st.text_input("Serving Size:", value=p_data.get("serving_size") or "30g")
-                        v_calories = st.number_input("Calories (kcal):", min_value=0.0, max_value=2500.0, value=float(p_data.get("calories") or 0.0), step=5.0)
-                        v_protein = st.number_input("Protein (g):", min_value=0.0, max_value=150.0, value=float(p_data.get("protein") or 0.0), step=0.5)
-                        v_carbs = st.number_input("Carbohydrates (g):", min_value=0.0, max_value=300.0, value=float(p_data.get("carbohydrates") or 0.0), step=1.0)
-                        v_fat = st.number_input("Total Fat (g):", min_value=0.0, max_value=150.0, value=float(p_data.get("total_fat") or 0.0), step=0.5)
+                        v_calories = st.number_input("Calories (kcal):", min_value=0.0, max_value=2500.0, value=_safe_float(p_data.get("calories")), step=5.0)
+                        v_protein = st.number_input("Protein (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("protein")), step=0.5)
+                        v_carbs = st.number_input("Carbohydrates (g):", min_value=0.0, max_value=300.0, value=_safe_float(p_data.get("carbohydrates")), step=1.0)
+                        v_fat = st.number_input("Total Fat (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("total_fat")), step=0.5)
 
                     with f_c2:
-                        v_sat_fat = st.number_input("Saturated Fat (g):", min_value=0.0, max_value=100.0, value=float(p_data.get("saturated_fat") or 0.0), step=0.5)
-                        v_trans_fat = st.number_input("Trans Fat (g):", min_value=0.0, max_value=50.0, value=float(p_data.get("trans_fat") or 0.0), step=0.1)
-                        v_fiber = st.number_input("Dietary Fiber (g):", min_value=0.0, max_value=80.0, value=float(p_data.get("fiber") or 0.0), step=0.5)
-                        v_total_sugar = st.number_input("Total Sugar (g):", min_value=0.0, max_value=200.0, value=float(p_data.get("total_sugar") or 0.0), step=0.5)
-                        v_added_sugar = st.number_input("Added Sugar (g):", min_value=0.0, max_value=200.0, value=float(p_data.get("added_sugar") or 0.0), step=0.5)
-                        v_sodium = st.number_input("Sodium (mg):", min_value=0.0, max_value=5000.0, value=float(p_data.get("sodium") or 0.0), step=10.0)
+                        v_sat_fat = st.number_input("Saturated Fat (g):", min_value=0.0, max_value=100.0, value=_safe_float(p_data.get("saturated_fat")), step=0.5)
+                        v_trans_fat = st.number_input("Trans Fat (g):", min_value=0.0, max_value=50.0, value=_safe_float(p_data.get("trans_fat")), step=0.1)
+                        v_fiber = st.number_input("Dietary Fiber (g):", min_value=0.0, max_value=80.0, value=_safe_float(p_data.get("fiber")), step=0.5)
+                        v_total_sugar = st.number_input("Total Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("total_sugar")), step=0.5)
+                        v_added_sugar = st.number_input("Added Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("added_sugar")), step=0.5)
+                        v_sodium = st.number_input("Sodium (mg):", min_value=0.0, max_value=5000.0, value=_safe_float(p_data.get("sodium")), step=10.0)
 
                     v_raw_text = st.text_area(
                         "Scanned Ingredients & Statements for Allergen Detection:",
@@ -749,7 +777,7 @@ with main_tabs[0]:
                         height=100
                     )
 
-                    confirm_button = st.form_submit_button("✅ Confirm & Analyze Label", use_container_width=True)
+                    confirm_button = st.form_submit_button("Confirm and Analyze Label", use_container_width=True)
 
                 if confirm_button or "confirmed_label_data" in st.session_state:
                     if confirm_button:
@@ -773,7 +801,7 @@ with main_tabs[0]:
                     c_nut = st.session_state["confirmed_label_data"]
 
                     st.markdown("---")
-                    st.markdown(f"### 📦 Confirmed Nutrition Profile: {c_nut['product_name']}")
+                    st.markdown(f"### Confirmed Nutrition Profile: {c_nut['product_name']}")
                     st.caption(f"Serving Size: **{c_nut['serving_size']}** | Source: **{st.session_state.get('label_source_type', 'OCR Scanner')}**")
 
                     # Display confirmed metrics cards
@@ -782,7 +810,7 @@ with main_tabs[0]:
                     # Per-Serving vs Per-100g table (Requirement 14)
                     per_100g_data, conv_reason = compute_per_100g_conversion(c_nut)
                     if per_100g_data:
-                        with st.expander("⚖️ View Per-Serving vs. Per-100g Comparison", expanded=False):
+                        with st.expander("View Per-Serving vs. Per-100g Comparison", expanded=False):
                             st.caption(f"Conversion basis: {conv_reason}")
                             df_compare = pd.DataFrame({
                                 "Metric": [
@@ -843,7 +871,7 @@ with main_tabs[0]:
                     )
 
                     # Explainable AI section (Requirement 16)
-                    st.markdown("### 🧠 Why did this food receive this score?")
+                    st.markdown("### Why did this food receive this score?")
                     st.caption("Feature contribution explanation based on transparent, auditable points attribution:")
                     sc_col1, sc_col2 = st.columns(2)
                     pos_f = [f for f in pkg_score_res["factors"] if f["status"] == "positive"]
@@ -873,7 +901,7 @@ with main_tabs[0]:
                     # Ingredient parsing & categorization (Requirement 18, 19)
                     ing_parsed = parse_ingredients_pipeline(c_nut.get("raw_text", ""))
                     if ing_parsed["ingredients"]:
-                        st.markdown("### 🧾 Detected Ingredients Breakdown")
+                        st.markdown("### Detected Ingredients Breakdown")
                         ing_col1, ing_col2 = st.columns(2)
                         with ing_col1:
                             st.markdown("**Parsed Ingredients List:**")
@@ -885,7 +913,7 @@ with main_tabs[0]:
                                 st.markdown(f"{item['icon']} **{item['ingredient']}** — *{item['category']}*")
 
                     # Visualizations (Requirement 26)
-                    st.markdown("### 📈 Packaged Food Nutrient Charts")
+                    st.markdown("### Packaged Food Nutrient Charts")
                     p_ch1, p_ch2 = st.columns(2)
                     with p_ch1:
                         st.plotly_chart(create_packaged_macro_bar_chart(c_nut), use_container_width=True)
@@ -896,10 +924,10 @@ with main_tabs[0]:
                         st.plotly_chart(create_allergen_summary_chart(allergen_analysis["allergen_table"]), use_container_width=True)
 
                     # Optional Open Food Facts Lookup (Requirement 29)
-                    with st.expander("🌐 Optional Product Database Lookup (Open Food Facts)", expanded=False):
+                    with st.expander("Optional Product Database Lookup (Open Food Facts)", expanded=False):
                         st.caption("Cross-reference with open global database (strictly non-blocking with 3s timeout).")
                         off_search = st.text_input("Search Open Food Facts for comparison:", value=c_nut["product_name"], key="off_lookup_input")
-                        if st.button("🔍 Search Online Database", key="btn_off_search"):
+                        if st.button("Search Online Database", key="btn_off_search"):
                             with st.spinner("Querying Open Food Facts..."):
                                 off_data = lookup_open_food_facts(off_search)
                             if off_data:
@@ -911,11 +939,11 @@ with main_tabs[0]:
     # --------------------------------------------------------------------------
     # MODE 3: 🧾 INGREDIENT SCANNER
     # --------------------------------------------------------------------------
-    elif selected_mode == "🧾 Ingredient Scanner":
+    elif selected_mode == "Ingredient Scanner":
         st.markdown(
             """
-            <div style="background:#FFF3E0; border:1px solid #FFE082; border-radius:8px; padding:12px; margin-bottom:14px;">
-                <b>🧾 Ingredient List Scanner</b><br>
+            <div style="background:#FFF3E0; border:1px solid #FFE082; border-radius:8px; padding:12px; margin-bottom:14px; color:#1a1a1a;">
+                <b>Ingredient List Scanner</b><br>
                 Dedicated scanner for package ingredient sections. Captures text, normalizes OCR typos,
                 classifies ingredients into neutral food science categories, detects allergens, and isolates cross-contact statements.
             </div>
@@ -928,8 +956,8 @@ with main_tabs[0]:
         captured_ing_img = None
 
         with ing_col_left:
-            st.subheader("📷 Capture Ingredients List")
-            ing_tab1, ing_tab2 = st.tabs(["📷 Real-Time Camera", "📁 Upload Image / Sample"])
+            st.subheader("Capture Ingredients List")
+            ing_tab1, ing_tab2 = st.tabs(["Real-Time Camera", "Upload Image / Sample"])
 
             with ing_tab1:
                 st.write("Position the ingredient list clearly inside the camera.")
@@ -941,7 +969,7 @@ with main_tabs[0]:
                 ing_up = st.file_uploader("Upload an ingredient list image:", type=["jpg", "jpeg", "png", "webp"], key="ing_uploader")
                 if ing_up:
                     captured_ing_img = load_image(ing_up)
-                elif st.button("🧪 Load Sample Ingredient Image"):
+                elif st.button("Load Sample Ingredient Image"):
                     sample_path = Path("assets/sample_biscuit_label.jpg")
                     if sample_path.exists():
                         captured_ing_img = Image.open(sample_path)
@@ -956,23 +984,23 @@ with main_tabs[0]:
                         ocr_res = run_ocr(pre_ocr["resized"])
 
                 if not ocr_res["success"]:
-                    st.error(f"⚠️ Unable to reliably read the ingredient list: {ocr_res.get('error_message', 'Unknown error')}")
+                    st.error(f"Unable to reliably read the ingredient list: {ocr_res.get('error_message', 'Unknown error')}")
                 else:
-                    st.success(f"✅ OCR Extracted {ocr_res['line_count']} text lines ({ocr_res['confidence']*100:.1f}% confidence)")
+                    st.success(f"OCR Extracted {ocr_res['line_count']} text lines ({ocr_res['confidence']*100:.1f}% confidence)")
                     st.session_state["ing_ocr_raw_text"] = ocr_res["raw_text"]
 
         with ing_col_right:
-            st.subheader("2. Ingredient & Allergen Analysis")
+            st.subheader("2. Ingredient and Allergen Analysis")
 
             if "ing_ocr_raw_text" not in st.session_state:
-                st.info("👈 Capture or upload an ingredient label on the left to extract ingredients.")
+                st.info("Capture or upload an ingredient label on the left to extract ingredients.")
             else:
                 raw_ing_ocr = st.session_state["ing_ocr_raw_text"]
 
-                st.markdown("#### ✏️ Verify Extracted Ingredient Text")
+                st.markdown("#### Verify Extracted Ingredient Text")
                 user_ing_text = st.text_area("OCR Ingredient Text (Edit if needed):", value=raw_ing_ocr, height=140)
 
-                if st.button("🔬 Analyze Ingredients & Allergens", key="btn_analyze_ingredients", use_container_width=True):
+                if st.button("Analyze Ingredients and Allergens", key="btn_analyze_ingredients", use_container_width=True):
                     st.session_state["verified_ing_text"] = user_ing_text
 
                 if "verified_ing_text" in st.session_state:
@@ -980,7 +1008,7 @@ with main_tabs[0]:
 
                     # 1. Parse and categorize ingredients
                     ing_parsed_res = parse_ingredients_pipeline(active_ing_text)
-                    st.markdown("### 🧾 Parsed Ingredients List")
+                    st.markdown("### Parsed Ingredients List")
                     st.write(f"Total Ingredients Identified: **{ing_parsed_res['total_ingredients_count']}**")
 
                     ing_list_col, ing_cat_col = st.columns(2)
@@ -1005,11 +1033,11 @@ with main_tabs[0]:
     # --------------------------------------------------------------------------
     # MODE 4: ✍ MANUAL NUTRITION ENTRY
     # --------------------------------------------------------------------------
-    elif selected_mode == "✍ Manual Nutrition Entry":
+    elif selected_mode == "Manual Nutrition Entry":
         st.markdown(
             """
-            <div style="background:#F3E5F5; border:1px solid #CE93D8; border-radius:8px; padding:12px; margin-bottom:14px;">
-                <b>✍ Manual Nutrition Entry Mode</b><br>
+            <div style="background:#F3E5F5; border:1px solid #CE93D8; border-radius:8px; padding:12px; margin-bottom:14px; color:#1a1a1a;">
+                <b>Manual Nutrition Entry Mode</b><br>
                 Directly enter nutritional facts from any food package or recipe to calculate the Reference Nutrition Score,
                 explain feature contributions, verify % Daily Values, and assess allergen risks.
             </div>
@@ -1043,7 +1071,7 @@ with main_tabs[0]:
                 value="Whole wheat flour, water, yeast, wheat gluten, brown sugar, soybean oil, salt."
             )
 
-            submit_manual = st.form_submit_button("📊 Calculate Nutrition Score & Explainability", use_container_width=True)
+            submit_manual = st.form_submit_button("Calculate Nutrition Score and Explainability", use_container_width=True)
 
         if submit_manual:
             man_data = {
@@ -1061,7 +1089,7 @@ with main_tabs[0]:
                 "sodium": man_sodium
             }
 
-            st.markdown(f"### 🍽️ Results for: **{man_name}**")
+            st.markdown(f"### Results for: **{man_name}**")
             display_nutrition_metrics_grid(man_data)
 
             man_score_res = calculate_nutrition_score(man_data)
@@ -1085,7 +1113,7 @@ with main_tabs[0]:
             )
 
             # Explainable AI
-            st.markdown("### 🧠 Why did this food receive this score?")
+            st.markdown("### Why did this food receive this score?")
             st.caption("Feature contribution explanation:")
             p_c1, p_c2 = st.columns(2)
             with p_c1:
@@ -1128,7 +1156,7 @@ with main_tabs[0]:
 # TAB 3: ANALYSIS HISTORY & CSV EXPORT
 # ==============================================================================
 with main_tabs[1]:
-    st.subheader("📜 Recent Analysis History (SQLite)")
+    st.subheader("Recent Analysis History (SQLite)")
     st.markdown("Log of recent nutritional assessments and packaged food scans saved locally in `data/analysis_history.db`:")
 
     history_df = get_analysis_history(limit=50)
@@ -1149,14 +1177,14 @@ with main_tabs[1]:
         with h_col1:
             csv_data = history_df.to_csv(index=False).encode("utf-8")
             st.download_button(
-                label="📥 Export History to CSV",
+                label="Export History to CSV",
                 data=csv_data,
                 file_name="food_analysis_history.csv",
                 mime="text/csv",
                 use_container_width=True
             )
         with h_col2:
-            if st.button("🗑️ Clear History Database", use_container_width=True):
+            if st.button("Clear History Database", use_container_width=True):
                 clear_analysis_history()
                 st.success("History database cleared.")
                 st.rerun()
