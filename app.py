@@ -77,7 +77,7 @@ from src.product_lookup import lookup_open_food_facts
 # ==============================================================================
 st.set_page_config(
     page_title="Explainable AI Food & Nutrition System",
-    page_icon="🥗",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -180,7 +180,7 @@ st.markdown(
         border-color: #81C784;
     }
 
-    /* Allergen alert box — explicit dark text so it's readable on any background */
+    /* Allergen alert box — explicit dark text and high-contrast badges */
     .allergen-box {
         border-left: 5px solid #D32F2F;
         background-color: #FFEBEE;
@@ -189,8 +189,27 @@ st.markdown(
         border-radius: 4px;
         margin: 10px 0;
     }
-    .allergen-box b, .allergen-box code, .allergen-box * {
+    .allergen-box b, .allergen-box strong, .allergen-box span {
         color: #212121 !important;
+    }
+    .matched-term {
+        background-color: #ffffff !important;
+        color: #b71c1c !important;
+        font-weight: 700 !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        border: 1px solid #ef9a9a !important;
+        font-family: monospace;
+        font-size: 0.95em;
+        display: inline-block;
+    }
+    .allergen-box code {
+        background-color: #ffffff !important;
+        color: #b71c1c !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+        border: 1px solid #ef9a9a !important;
+        font-size: 0.9em !important;
     }
     .precautionary-box {
         border-left: 5px solid #FFA000;
@@ -200,8 +219,26 @@ st.markdown(
         border-radius: 4px;
         margin: 10px 0;
     }
-    .precautionary-box b, .precautionary-box code, .precautionary-box * {
+    .precautionary-box b, .precautionary-box strong, .precautionary-box span {
         color: #212121 !important;
+    }
+    .precautionary-term {
+        background-color: #ffffff !important;
+        color: #e65100 !important;
+        font-weight: 600 !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        border: 1px solid #ffe082 !important;
+        font-size: 0.95em;
+        display: inline-block;
+    }
+    .precautionary-box code {
+        background-color: #ffffff !important;
+        color: #e65100 !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+        border: 1px solid #ffe082 !important;
+        font-size: 0.9em !important;
     }
     </style>
     """,
@@ -211,21 +248,25 @@ st.markdown(
 # ==============================================================================
 # SAFE FLOAT HELPER
 # ==============================================================================
-def _safe_float(value, default: float = 0.0) -> float:
-    """Safely convert OCR-parsed values (str, int, float, or None) to float."""
-    if value is None:
-        return default
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        import re
-        match = re.search(r"[-+]?\d*\.?\d+", str(value))
-        if match:
-            try:
-                return float(match.group(0))
-            except ValueError:
-                pass
-    return default
+def _safe_float(value, default: float = 0.0, min_val: float = 0.0, max_val: float = 1e6) -> float:
+    """Safely convert OCR-parsed values (str, int, float, or None) to a bounded float."""
+    import math, re
+    val = default
+    if value is not None:
+        try:
+            parsed = float(value)
+            if math.isfinite(parsed):
+                val = parsed
+        except (TypeError, ValueError):
+            match = re.search(r"[-+]?\d*\.?\d+", str(value))
+            if match:
+                try:
+                    parsed = float(match.group(0))
+                    if math.isfinite(parsed):
+                        val = parsed
+                except ValueError:
+                    pass
+    return max(float(min_val), min(float(max_val), float(val)))
 
 
 # ==============================================================================
@@ -241,7 +282,7 @@ all_foods = nutrition_db.get_all_food_names()
 # ==============================================================================
 with st.sidebar:
     st.markdown("---")
-    st.markdown("### 🧭 Main Navigation Modes")
+    st.markdown("### Main Navigation Modes")
 
     selected_mode = st.radio(
         "Select Application Mode:",
@@ -255,7 +296,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### ⚙️ Mode Settings")
+    st.markdown("### Mode Settings")
 
     if selected_mode == "Food Image Analysis":
         food_input_mode = st.radio(
@@ -272,11 +313,11 @@ with st.sidebar:
             help="If AI vision confidence falls below this threshold, manual confirmation is advised."
         )
         st.markdown("---")
-        st.markdown("### 🤖 Vision Model Status")
+        st.markdown("### Vision Model Status")
         if classifier.fallback_mode:
-            st.warning(f"⚠️ {classifier.status_message}")
+            st.warning(classifier.status_message)
         else:
-            st.success("✅ MobileNetV2 ONNX Active (Local CPU Inference)")
+            st.success("MobileNetV2 ONNX Active (Local CPU Inference)")
 
     elif selected_mode in ["Real-Time Food Label Scanner", "Ingredient Scanner"]:
         st.caption("Camera Capture Mode: Uses Streamlit Real-Time Camera input.")
@@ -284,7 +325,7 @@ with st.sidebar:
         st.success("Local EasyOCR Deep Learning Engine Active")
 
     st.markdown("---")
-    if st.button("🔄 Reset Application Session", use_container_width=True):
+    if st.button("Reset Application Session", use_container_width=True):
         st.session_state.clear()
         st.rerun()
 
@@ -294,7 +335,7 @@ with st.sidebar:
 st.markdown(
     """
     <div class="academic-banner">
-        <h2>🥗 Explainable AI-Based Real-Time Food & Nutrition Analysis System</h2>
+        <h2>Explainable AI-Based Real-Time Food & Nutrition Analysis System</h2>
         <p>An end-to-end multi-modal framework integrating deep learning computer vision, real-time packaged food label OCR, transparent rule-based scoring, SHAP explainability, and allergen detection.</p>
     </div>
     """,
@@ -302,7 +343,7 @@ st.markdown(
 )
 
 # Navigation tabs
-main_tabs = st.tabs(["📊 Interactive Analysis", "📜 Analysis History"])
+main_tabs = st.tabs(["Interactive Analysis", "Analysis History"])
 
 
 # ==============================================================================
@@ -341,7 +382,7 @@ def display_nutrition_metrics_grid(nut: Dict[str, Any]):
 # ==============================================================================
 def display_allergen_section(allergen_res: Dict[str, Any]):
     """Renders prominent allergen warning section, distinction, and table."""
-    st.markdown("### 🚨 ALLERGEN INFORMATION")
+    st.markdown("### ALLERGEN INFORMATION")
 
     table = allergen_res.get("allergen_table", [])
     has_allergens = allergen_res.get("has_allergens", False)
@@ -353,39 +394,39 @@ def display_allergen_section(allergen_res: Dict[str, Any]):
         prec_allergens = [a for a in table if a["source"] == "Precautionary"]
 
         if ing_allergens:
-            st.markdown("#### ⚠️ Potential Allergens Detected in Ingredients:")
+            st.markdown("#### Potential Allergens Detected in Ingredients:")
             for a in ing_allergens:
                 st.markdown(
                     f"""
                     <div class="allergen-box">
-                        <b>{a['icon']} {a['allergen']} Detected</b><br>
-                        Matched Ingredient Term: <code>{a['detected_term']}</code>
+                        <b>{a['allergen']} Detected</b><br>
+                        Matched Ingredient Term: <span class="matched-term">{a['detected_term']}</span>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
         if prec_allergens or precautionary:
-            st.markdown("#### ⚠️ Cross-Contact / Precautionary Statements Detected:")
+            st.markdown("#### Cross-Contact / Precautionary Statements Detected:")
             st.caption("Note: These are facility cross-contact warnings, not direct recipe ingredients.")
             for p in precautionary:
                 st.markdown(
                     f"""
                     <div class="precautionary-box">
-                        <b>Facility Cross-Contact Warning:</b> "{p}"
+                        <b>Facility Cross-Contact Warning:</b> <span class="precautionary-term">"{p}"</span>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
         # Allergen category table
-        st.markdown("##### 📋 Allergen Summary Table")
+        st.markdown("##### Allergen Summary Table")
         df_al = pd.DataFrame(table)[["allergen", "detected_term", "source"]]
         df_al.columns = ["Allergen Category", "Detected Term", "Source"]
         st.dataframe(df_al, use_container_width=True)
 
     else:
-        st.success("✅ No supported allergen terms detected in the scanned ingredient text.")
+        st.success("No supported allergen terms detected in the scanned ingredient text.")
 
 
 
@@ -398,7 +439,7 @@ with main_tabs[0]:
     # --------------------------------------------------------------------------
     # MODE 1: 🍎 FOOD IMAGE ANALYSIS
     # --------------------------------------------------------------------------
-    if selected_mode == "🍎 Food Image Analysis":
+    if selected_mode == "Food Image Analysis":
         col_input, col_results = st.columns([1, 1.4], gap="large")
 
         active_food: str = ""
@@ -570,7 +611,7 @@ with main_tabs[0]:
                         st.markdown("**Positive Contributing Factors (Score Boosters):**")
                         if pos_factors:
                             for pf in pos_factors:
-                                st.markdown(f"✓ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
+                                st.markdown(f"+ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
                         else:
                             st.caption("No notable positive score boosts identified.")
 
@@ -578,7 +619,7 @@ with main_tabs[0]:
                         st.markdown("**Negative Deductions (Score Reducers):**")
                         if neg_factors:
                             for nf in neg_factors:
-                                st.markdown(f"⚠️ <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
+                                st.markdown(f"- <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
                         else:
                             st.caption("No penalizing deductions for excess sugar, fat, or calorie density.")
 
@@ -758,18 +799,18 @@ with main_tabs[0]:
                     with f_c1:
                         v_product = st.text_input("Product Name:", value=p_data.get("product_name") or "Packaged Food Product")
                         v_serving = st.text_input("Serving Size:", value=p_data.get("serving_size") or "30g")
-                        v_calories = st.number_input("Calories (kcal):", min_value=0.0, max_value=2500.0, value=_safe_float(p_data.get("calories")), step=5.0)
-                        v_protein = st.number_input("Protein (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("protein")), step=0.5)
-                        v_carbs = st.number_input("Carbohydrates (g):", min_value=0.0, max_value=300.0, value=_safe_float(p_data.get("carbohydrates")), step=1.0)
-                        v_fat = st.number_input("Total Fat (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("total_fat")), step=0.5)
+                        v_calories = st.number_input("Calories (kcal):", min_value=0.0, max_value=2500.0, value=_safe_float(p_data.get("calories"), 0.0, 0.0, 2500.0), step=5.0)
+                        v_protein = st.number_input("Protein (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("protein"), 0.0, 0.0, 150.0), step=0.5)
+                        v_carbs = st.number_input("Carbohydrates (g):", min_value=0.0, max_value=300.0, value=_safe_float(p_data.get("carbohydrates"), 0.0, 0.0, 300.0), step=1.0)
+                        v_fat = st.number_input("Total Fat (g):", min_value=0.0, max_value=150.0, value=_safe_float(p_data.get("total_fat"), 0.0, 0.0, 150.0), step=0.5)
 
                     with f_c2:
-                        v_sat_fat = st.number_input("Saturated Fat (g):", min_value=0.0, max_value=100.0, value=_safe_float(p_data.get("saturated_fat")), step=0.5)
-                        v_trans_fat = st.number_input("Trans Fat (g):", min_value=0.0, max_value=50.0, value=_safe_float(p_data.get("trans_fat")), step=0.1)
-                        v_fiber = st.number_input("Dietary Fiber (g):", min_value=0.0, max_value=80.0, value=_safe_float(p_data.get("fiber")), step=0.5)
-                        v_total_sugar = st.number_input("Total Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("total_sugar")), step=0.5)
-                        v_added_sugar = st.number_input("Added Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("added_sugar")), step=0.5)
-                        v_sodium = st.number_input("Sodium (mg):", min_value=0.0, max_value=5000.0, value=_safe_float(p_data.get("sodium")), step=10.0)
+                        v_sat_fat = st.number_input("Saturated Fat (g):", min_value=0.0, max_value=100.0, value=_safe_float(p_data.get("saturated_fat"), 0.0, 0.0, 100.0), step=0.5)
+                        v_trans_fat = st.number_input("Trans Fat (g):", min_value=0.0, max_value=50.0, value=_safe_float(p_data.get("trans_fat"), 0.0, 0.0, 50.0), step=0.1)
+                        v_fiber = st.number_input("Dietary Fiber (g):", min_value=0.0, max_value=80.0, value=_safe_float(p_data.get("fiber"), 0.0, 0.0, 80.0), step=0.5)
+                        v_total_sugar = st.number_input("Total Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("total_sugar"), 0.0, 0.0, 200.0), step=0.5)
+                        v_added_sugar = st.number_input("Added Sugar (g):", min_value=0.0, max_value=200.0, value=_safe_float(p_data.get("added_sugar"), 0.0, 0.0, 200.0), step=0.5)
+                        v_sodium = st.number_input("Sodium (mg):", min_value=0.0, max_value=5000.0, value=_safe_float(p_data.get("sodium"), 0.0, 0.0, 5000.0), step=10.0)
 
                     v_raw_text = st.text_area(
                         "Scanned Ingredients & Statements for Allergen Detection:",
@@ -881,7 +922,7 @@ with main_tabs[0]:
                         st.markdown("**Positive Contributors (Score Boosters):**")
                         if pos_f:
                             for pf in pos_f:
-                                st.markdown(f"✓ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
+                                st.markdown(f"+ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
                         else:
                             st.caption("No significant positive bonuses.")
 
@@ -889,7 +930,7 @@ with main_tabs[0]:
                         st.markdown("**Negative Deductions (Score Reducers):**")
                         if neg_f:
                             for nf in neg_f:
-                                st.markdown(f"⚠️ <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
+                                st.markdown(f"- <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
                         else:
                             st.caption("No penalizing deductions.")
 
@@ -910,7 +951,7 @@ with main_tabs[0]:
                         with ing_col2:
                             st.markdown("**Food Science Category Tags:**")
                             for item in ing_parsed["categorized_items"]:
-                                st.markdown(f"{item['icon']} **{item['ingredient']}** — *{item['category']}*")
+                                st.markdown(f"• **{item['ingredient']}** — *{item['category']}*")
 
                     # Visualizations (Requirement 26)
                     st.markdown("### Packaged Food Nutrient Charts")
@@ -1020,7 +1061,7 @@ with main_tabs[0]:
                     with ing_cat_col:
                         st.markdown("**Category Classification:**")
                         for item in ing_parsed_res["categorized_items"]:
-                            st.markdown(f"{item['icon']} **{item['ingredient']}** — *{item['category']}*")
+                            st.markdown(f"• **{item['ingredient']}** — *{item['category']}*")
 
                     # 2. Detect allergens and cross-contact statements
                     allergen_res = detect_allergens(active_ing_text)
@@ -1119,11 +1160,11 @@ with main_tabs[0]:
             with p_c1:
                 st.markdown("**Positive Contributing Factors:**")
                 for pf in [f for f in man_score_res["factors"] if f["status"] == "positive"]:
-                    st.markdown(f"✓ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
+                    st.markdown(f"+ <span class='tag-positive'>+{pf['impact']} pts</span> **{pf['feature']}** ({pf['value']})<br><small>{pf['reason']}</small>", unsafe_allow_html=True)
             with p_c2:
                 st.markdown("**Negative Deductions:**")
                 for nf in [f for f in man_score_res["factors"] if f["status"] == "negative"]:
-                    st.markdown(f"⚠️ <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
+                    st.markdown(f"- <span class='tag-negative'>{nf['impact']} pts</span> **{nf['feature']}** ({nf['value']})<br><small>{nf['reason']}</small>", unsafe_allow_html=True)
 
             st.plotly_chart(create_feature_contribution_chart(man_score_res), use_container_width=True)
 

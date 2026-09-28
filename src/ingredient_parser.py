@@ -12,57 +12,57 @@ from typing import Dict, List, Any, Tuple, Optional
 # Food Science Category Mapping for Neutral Ingredient Classification
 CATEGORY_KEYWORDS: Dict[str, Tuple[str, List[str]]] = {
     "Grains & Cereals": (
-        "🌾",
+        "",
         ["flour", "wheat", "oat", "oats", "rice", "corn", "maize", "barley",
          "rye", "malt", "starch", "semolina", "atta", "maida", "grain", "cereal"]
     ),
     "Sugars & Sweeteners": (
-        "🍯",
+        "",
         ["sugar", "glucose", "fructose", "sucrose", "dextrose", "syrup",
          "corn syrup", "honey", "invert sugar", "molasses", "maltodextrin",
          "caramel", "sweetener", "maltitol", "sorbitol", "stevia"]
     ),
     "Oils & Fats": (
-        "🧈",
+        "",
         ["oil", "fat", "shortening", "margarine", "butter", "cocoa butter",
          "palm oil", "sunflower oil", "canola oil", "vegetable oil", "ghee",
          "lard", "tallow", "olein"]
     ),
     "Dairy & Milk Derivatives": (
-        "🥛",
+        "",
         ["milk", "whey", "casein", "caseinate", "lactose", "cheese",
          "cream", "curd", "dairy", "yogurt"]
     ),
     "Soy Components": (
-        "🌱",
+        "",
         ["soy", "soya", "soybean", "edamame", "tofu"]
     ),
     "Nuts & Legumes": (
-        "🥜",
+        "",
         ["peanut", "almond", "cashew", "walnut", "hazelnut", "pistachio",
          "pecan", "bean", "lentil", "chickpea"]
     ),
     "Seeds": (
-        "🥯",
+        "",
         ["sesame", "chia", "flax", "flaxseed", "sunflower seed", "pumpkin seed"]
     ),
     "Salt & Leavening Agents": (
-        "🧂",
+        "",
         ["salt", "sodium chloride", "baking powder", "baking soda",
          "sodium bicarbonate", "ammonium bicarbonate", "leavening"]
     ),
     "Emulsifiers & Stabilizers": (
-        "🔬",
+        "",
         ["lecithin", "emulsifier", "e322", "e471", "e472", "mono- and diglycerides",
          "polysorbate", "xanthan", "guar gum", "carrageenan", "pectin"]
     ),
     "Preservatives & Antioxidants": (
-        "🛡️",
+        "",
         ["preservative", "sodium benzoate", "potassium sorbate", "citric acid",
          "ascorbic acid", "tocopherol", "bht", "bha", "e202", "e211", "sulfite"]
     ),
     "Flavouring & Spices": (
-        "🌿",
+        "",
         ["flavor", "flavour", "flavoring", "flavouring", "vanilla", "vanillin",
          "cocoa", "cacao", "spice", "cinnamon", "cardamom", "pepper", "extract"]
     )
@@ -175,7 +175,7 @@ def categorize_ingredient(ingredient: str) -> Dict[str, str]:
 
     return {
         "category": "Other Ingredients",
-        "icon": "🍽️",
+        "icon": "",
         "ingredient": ingredient
     }
 

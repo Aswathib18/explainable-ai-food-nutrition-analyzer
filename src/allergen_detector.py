@@ -18,7 +18,7 @@ from typing import Dict, List, Any, Tuple, Optional
 # ==============================================================================
 ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
     "Milk / Dairy": {
-        "icon": "🥛",
+        "icon": "",
         "terms": [
             "milk", "milk powder", "milk solids", "skimmed milk", "whole milk",
             "skim milk", "milk fat", "dairy", "whey", "whey protein",
@@ -29,7 +29,7 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Soy": {
-        "icon": "🌱",
+        "icon": "",
         "terms": [
             "soy", "soya", "soybean", "soybeans", "soy protein", "soy lecithin",
             "soya lecithin", "soy flour", "soya flour", "soy sauce", "tofu",
@@ -38,7 +38,7 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Wheat & Gluten": {
-        "icon": "🌾",
+        "icon": "",
         "terms": [
             "wheat", "wheat flour", "refined wheat flour", "whole wheat",
             "wheat protein", "wheat germ", "wheat gluten", "gluten",
@@ -47,14 +47,14 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Peanuts": {
-        "icon": "🥜",
+        "icon": "",
         "terms": [
             "peanut", "peanuts", "peanut flour", "peanut oil", "peanut butter",
             "groundnut", "groundnuts", "arachis oil"
         ]
     },
     "Tree Nuts": {
-        "icon": "🌰",
+        "icon": "",
         "terms": [
             "tree nut", "tree nuts", "nuts",
             "almond", "almonds", "cashew", "cashews", "walnut", "walnuts",
@@ -64,14 +64,14 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Eggs": {
-        "icon": "🥚",
+        "icon": "",
         "terms": [
             "egg", "eggs", "egg powder", "egg white", "egg yolk", "albumin",
             "ovalbumin", "ovomucin", "ovomucoid", "lysozyme", "meringue"
         ]
     },
     "Fish": {
-        "icon": "🐟",
+        "icon": "",
         "terms": [
             "fish", "salmon", "tuna", "cod", "anchovy", "anchovies",
             "fish gelatin", "fish oil", "fish sauce", "tilapia", "haddock",
@@ -79,7 +79,7 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Crustacean & Shellfish": {
-        "icon": "🦐",
+        "icon": "",
         "terms": [
             "shellfish", "crustacean", "crustaceans", "shrimp", "shrimps",
             "prawn", "prawns", "crab", "crabs", "lobster", "lobsters",
@@ -88,21 +88,21 @@ ALLERGEN_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
     "Sesame": {
-        "icon": "🥯",
+        "icon": "",
         "terms": [
             "sesame", "sesame seed", "sesame seeds", "sesame oil",
             "sesame paste", "tahini", "til"
         ]
     },
     "Mustard": {
-        "icon": "🌿",
+        "icon": "",
         "terms": [
             "mustard", "mustard seed", "mustard seeds", "mustard flour",
             "mustard oil", "dijon mustard"
         ]
     },
     "Sulphites": {
-        "icon": "🍷",
+        "icon": "",
         "terms": [
             "sulphite", "sulphites", "sulfite", "sulfites", "sulfur dioxide",
             "sulphur dioxide", "sodium metabisulfite", "sodium metabisulphite",

@@ -241,48 +241,48 @@ def generate_dietary_recommendations(
     # 1. Fiber recommendations
     if fiber < 2.0:
         recommendations.append(
-            "🌱 **Boost Dietary Fiber**: This item contains low fiber (< 2g). "
+            "**Boost Dietary Fiber**: This item contains low fiber (< 2g). "
             "Consider pairing it with fiber-rich foods like leafy greens, legumes, chia seeds, or whole grains."
         )
     elif fiber >= 5.0:
         recommendations.append(
-            "✨ **Excellent Fiber Source**: Provides over 5g of dietary fiber, supporting smooth digestion and prolonged fullness."
+            "**Excellent Fiber Source**: Provides over 5g of dietary fiber, supporting smooth digestion and prolonged fullness."
         )
 
     # 2. Protein recommendations
     if protein < 4.0:
         recommendations.append(
-            "💪 **Pair with Protein**: This food is low in protein (< 4g). "
+            "**Pair with Protein**: This food is low in protein (< 4g). "
             "To support muscle repair and sustained energy, combine it with eggs, tofu, Greek yogurt, or lean poultry."
         )
     elif protein >= 15.0:
         recommendations.append(
-            "🥇 **High-Protein Profile**: Delivers a substantial protein serving (≥ 15g), ideal for satiety and active lifestyles."
+            "**High-Protein Profile**: Delivers a substantial protein serving (≥ 15g), ideal for satiety and active lifestyles."
         )
 
     # 3. Sugar alerts
     if sugar > 15.0:
         recommendations.append(
-            "⚠️ **Mind Sugar Intake**: Contains elevated sugar (> 15g). "
+            "**Mind Sugar Intake**: Contains elevated sugar (> 15g). "
             "Consider managing portion sizes to avoid rapid post-meal glucose spikes."
         )
 
     # 4. Fat & Calorie density
     if fat > 14.0 and calories > 300:
         recommendations.append(
-            "⚖️ **Energy-Dense Food**: Contains higher fat and calorie levels. "
+            "**Energy-Dense Food**: Contains higher fat and calorie levels. "
             "Best enjoyed in mindful portions balanced with lighter, nutrient-dense side dishes."
         )
 
     # 5. Overall score praise
     if score >= 75.0:
         recommendations.append(
-            "🌟 **Nutrient-Dense Choice**: This food achieved an outstanding reference score due to its high fiber/protein density and low sugar content."
+            "**Nutrient-Dense Choice**: This food achieved an outstanding reference score due to its high fiber/protein density and low sugar content."
         )
 
     if not recommendations:
         recommendations.append(
-            "🥗 **Balanced Nutrient Profile**: This food provides a steady balance of macronutrients suitable for varied daily meals."
+            "**Balanced Nutrient Profile**: This food provides a steady balance of macronutrients suitable for varied daily meals."
         )
 
     return recommendations
